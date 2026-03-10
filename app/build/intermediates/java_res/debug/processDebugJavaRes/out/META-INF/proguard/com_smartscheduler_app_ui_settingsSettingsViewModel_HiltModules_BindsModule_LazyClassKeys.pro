@@ -1,0 +1,3 @@
+-keep,allowobfuscation,allowshrinking class com.smartscheduler.app.ui.calendar.CalendarViewModel
+-keep,allowobfuscation,allowshrinking class com.smartscheduler.app.ui.calendar.CalendarViewModel
+-keep,allowobfuscation,allowshrinking class com.smartscheduler.app.ui.settings.SettingsViewModel
