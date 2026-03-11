@@ -84,3 +84,26 @@ class TodoRepository @Inject constructor(
 
     suspend fun clearAll() = todoDao.deleteAll()
 }
+
+@Singleton
+class FocusSessionRepository @Inject constructor(
+    private val focusSessionDao: com.smartscheduler.app.data.local.FocusSessionDao
+) {
+    fun getAllSessions(): Flow<List<FocusSession>> =
+        focusSessionDao.getAll().map { list -> list.map { it.toDomain() } }
+
+    fun getSessionsByDate(date: LocalDate): Flow<List<FocusSession>> =
+        focusSessionDao.getByDate(date.toString()).map { list -> list.map { it.toDomain() } }
+
+    fun getSessionsByRange(start: LocalDate, end: LocalDate): Flow<List<FocusSession>> =
+        focusSessionDao.getByDateRange(start.toString(), end.toString())
+            .map { list -> list.map { it.toDomain() } }
+
+    suspend fun insertSession(session: FocusSession): Long =
+        focusSessionDao.insert(session.toEntity())
+
+    suspend fun deleteSession(session: FocusSession) =
+        focusSessionDao.delete(session.toEntity())
+
+    suspend fun clearAll() = focusSessionDao.deleteAll()
+}

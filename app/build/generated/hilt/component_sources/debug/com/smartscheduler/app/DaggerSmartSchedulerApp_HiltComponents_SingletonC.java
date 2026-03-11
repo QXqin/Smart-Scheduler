@@ -8,18 +8,24 @@ import androidx.lifecycle.SavedStateHandle;
 import androidx.lifecycle.ViewModel;
 import com.smartscheduler.app.data.local.AppDatabase;
 import com.smartscheduler.app.data.local.FixedEventDao;
+import com.smartscheduler.app.data.local.FocusSessionDao;
 import com.smartscheduler.app.data.local.ScheduledBlockDao;
 import com.smartscheduler.app.data.local.TodoDao;
 import com.smartscheduler.app.data.repository.EventRepository;
+import com.smartscheduler.app.data.repository.FocusSessionRepository;
 import com.smartscheduler.app.data.repository.LlmRepository;
 import com.smartscheduler.app.data.repository.SettingsRepository;
 import com.smartscheduler.app.data.repository.TodoRepository;
 import com.smartscheduler.app.di.AppModule_ProvideDatabaseFactory;
 import com.smartscheduler.app.di.AppModule_ProvideFixedEventDaoFactory;
+import com.smartscheduler.app.di.AppModule_ProvideFocusSessionDaoFactory;
 import com.smartscheduler.app.di.AppModule_ProvideMoshiFactory;
 import com.smartscheduler.app.di.AppModule_ProvideScheduledBlockDaoFactory;
 import com.smartscheduler.app.di.AppModule_ProvideTodoDaoFactory;
+import com.smartscheduler.app.domain.timer.FocusTimerManager;
 import com.smartscheduler.app.domain.usecase.GenerateScheduleUseCase;
+import com.smartscheduler.app.service.FocusTimerService;
+import com.smartscheduler.app.service.FocusTimerService_MembersInjector;
 import com.smartscheduler.app.ui.MainActivity;
 import com.smartscheduler.app.ui.calendar.CalendarViewModel;
 import com.smartscheduler.app.ui.calendar.CalendarViewModel_HiltModules;
@@ -29,10 +35,18 @@ import com.smartscheduler.app.ui.dashboard.DashboardViewModel;
 import com.smartscheduler.app.ui.dashboard.DashboardViewModel_HiltModules;
 import com.smartscheduler.app.ui.dashboard.DashboardViewModel_HiltModules_BindsModule_Binds_LazyMapKey;
 import com.smartscheduler.app.ui.dashboard.DashboardViewModel_HiltModules_KeyModule_Provide_LazyMapKey;
+import com.smartscheduler.app.ui.focus.FocusTimerViewModel;
+import com.smartscheduler.app.ui.focus.FocusTimerViewModel_HiltModules;
+import com.smartscheduler.app.ui.focus.FocusTimerViewModel_HiltModules_BindsModule_Binds_LazyMapKey;
+import com.smartscheduler.app.ui.focus.FocusTimerViewModel_HiltModules_KeyModule_Provide_LazyMapKey;
 import com.smartscheduler.app.ui.settings.SettingsViewModel;
 import com.smartscheduler.app.ui.settings.SettingsViewModel_HiltModules;
 import com.smartscheduler.app.ui.settings.SettingsViewModel_HiltModules_BindsModule_Binds_LazyMapKey;
 import com.smartscheduler.app.ui.settings.SettingsViewModel_HiltModules_KeyModule_Provide_LazyMapKey;
+import com.smartscheduler.app.ui.statistics.StatisticsViewModel;
+import com.smartscheduler.app.ui.statistics.StatisticsViewModel_HiltModules;
+import com.smartscheduler.app.ui.statistics.StatisticsViewModel_HiltModules_BindsModule_Binds_LazyMapKey;
+import com.smartscheduler.app.ui.statistics.StatisticsViewModel_HiltModules_KeyModule_Provide_LazyMapKey;
 import com.smartscheduler.app.ui.todo.TodoViewModel;
 import com.smartscheduler.app.ui.todo.TodoViewModel_HiltModules;
 import com.smartscheduler.app.ui.todo.TodoViewModel_HiltModules_BindsModule_Binds_LazyMapKey;
@@ -400,7 +414,7 @@ public final class DaggerSmartSchedulerApp_HiltComponents_SingletonC {
 
     @Override
     public Map<Class<?>, Boolean> getViewModelKeys() {
-      return LazyClassKeyMap.<Boolean>of(MapBuilder.<String, Boolean>newMapBuilder(4).put(CalendarViewModel_HiltModules_KeyModule_Provide_LazyMapKey.lazyClassKeyName, CalendarViewModel_HiltModules.KeyModule.provide()).put(DashboardViewModel_HiltModules_KeyModule_Provide_LazyMapKey.lazyClassKeyName, DashboardViewModel_HiltModules.KeyModule.provide()).put(SettingsViewModel_HiltModules_KeyModule_Provide_LazyMapKey.lazyClassKeyName, SettingsViewModel_HiltModules.KeyModule.provide()).put(TodoViewModel_HiltModules_KeyModule_Provide_LazyMapKey.lazyClassKeyName, TodoViewModel_HiltModules.KeyModule.provide()).build());
+      return LazyClassKeyMap.<Boolean>of(MapBuilder.<String, Boolean>newMapBuilder(6).put(CalendarViewModel_HiltModules_KeyModule_Provide_LazyMapKey.lazyClassKeyName, CalendarViewModel_HiltModules.KeyModule.provide()).put(DashboardViewModel_HiltModules_KeyModule_Provide_LazyMapKey.lazyClassKeyName, DashboardViewModel_HiltModules.KeyModule.provide()).put(FocusTimerViewModel_HiltModules_KeyModule_Provide_LazyMapKey.lazyClassKeyName, FocusTimerViewModel_HiltModules.KeyModule.provide()).put(SettingsViewModel_HiltModules_KeyModule_Provide_LazyMapKey.lazyClassKeyName, SettingsViewModel_HiltModules.KeyModule.provide()).put(StatisticsViewModel_HiltModules_KeyModule_Provide_LazyMapKey.lazyClassKeyName, StatisticsViewModel_HiltModules.KeyModule.provide()).put(TodoViewModel_HiltModules_KeyModule_Provide_LazyMapKey.lazyClassKeyName, TodoViewModel_HiltModules.KeyModule.provide()).build());
     }
 
     @Override
@@ -430,7 +444,11 @@ public final class DaggerSmartSchedulerApp_HiltComponents_SingletonC {
 
     private Provider<DashboardViewModel> dashboardViewModelProvider;
 
+    private Provider<FocusTimerViewModel> focusTimerViewModelProvider;
+
     private Provider<SettingsViewModel> settingsViewModelProvider;
+
+    private Provider<StatisticsViewModel> statisticsViewModelProvider;
 
     private Provider<TodoViewModel> todoViewModelProvider;
 
@@ -453,13 +471,15 @@ public final class DaggerSmartSchedulerApp_HiltComponents_SingletonC {
         final ViewModelLifecycle viewModelLifecycleParam) {
       this.calendarViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 0);
       this.dashboardViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 1);
-      this.settingsViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 2);
-      this.todoViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 3);
+      this.focusTimerViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 2);
+      this.settingsViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 3);
+      this.statisticsViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 4);
+      this.todoViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 5);
     }
 
     @Override
     public Map<Class<?>, javax.inject.Provider<ViewModel>> getHiltViewModelMap() {
-      return LazyClassKeyMap.<javax.inject.Provider<ViewModel>>of(MapBuilder.<String, javax.inject.Provider<ViewModel>>newMapBuilder(4).put(CalendarViewModel_HiltModules_BindsModule_Binds_LazyMapKey.lazyClassKeyName, ((Provider) calendarViewModelProvider)).put(DashboardViewModel_HiltModules_BindsModule_Binds_LazyMapKey.lazyClassKeyName, ((Provider) dashboardViewModelProvider)).put(SettingsViewModel_HiltModules_BindsModule_Binds_LazyMapKey.lazyClassKeyName, ((Provider) settingsViewModelProvider)).put(TodoViewModel_HiltModules_BindsModule_Binds_LazyMapKey.lazyClassKeyName, ((Provider) todoViewModelProvider)).build());
+      return LazyClassKeyMap.<javax.inject.Provider<ViewModel>>of(MapBuilder.<String, javax.inject.Provider<ViewModel>>newMapBuilder(6).put(CalendarViewModel_HiltModules_BindsModule_Binds_LazyMapKey.lazyClassKeyName, ((Provider) calendarViewModelProvider)).put(DashboardViewModel_HiltModules_BindsModule_Binds_LazyMapKey.lazyClassKeyName, ((Provider) dashboardViewModelProvider)).put(FocusTimerViewModel_HiltModules_BindsModule_Binds_LazyMapKey.lazyClassKeyName, ((Provider) focusTimerViewModelProvider)).put(SettingsViewModel_HiltModules_BindsModule_Binds_LazyMapKey.lazyClassKeyName, ((Provider) settingsViewModelProvider)).put(StatisticsViewModel_HiltModules_BindsModule_Binds_LazyMapKey.lazyClassKeyName, ((Provider) statisticsViewModelProvider)).put(TodoViewModel_HiltModules_BindsModule_Binds_LazyMapKey.lazyClassKeyName, ((Provider) todoViewModelProvider)).build());
     }
 
     @Override
@@ -494,10 +514,16 @@ public final class DaggerSmartSchedulerApp_HiltComponents_SingletonC {
           case 1: // com.smartscheduler.app.ui.dashboard.DashboardViewModel 
           return (T) new DashboardViewModel(singletonCImpl.eventRepositoryProvider.get(), singletonCImpl.todoRepositoryProvider.get());
 
-          case 2: // com.smartscheduler.app.ui.settings.SettingsViewModel 
+          case 2: // com.smartscheduler.app.ui.focus.FocusTimerViewModel 
+          return (T) new FocusTimerViewModel(ApplicationContextModule_ProvideApplicationFactory.provideApplication(singletonCImpl.applicationContextModule), singletonCImpl.focusTimerManagerProvider.get());
+
+          case 3: // com.smartscheduler.app.ui.settings.SettingsViewModel 
           return (T) new SettingsViewModel(singletonCImpl.settingsRepositoryProvider.get(), singletonCImpl.eventRepositoryProvider.get(), singletonCImpl.todoRepositoryProvider.get());
 
-          case 3: // com.smartscheduler.app.ui.todo.TodoViewModel 
+          case 4: // com.smartscheduler.app.ui.statistics.StatisticsViewModel 
+          return (T) new StatisticsViewModel(singletonCImpl.focusSessionRepositoryProvider.get(), singletonCImpl.todoRepositoryProvider.get());
+
+          case 5: // com.smartscheduler.app.ui.todo.TodoViewModel 
           return (T) new TodoViewModel(singletonCImpl.todoRepositoryProvider.get());
 
           default: throw new AssertionError(id);
@@ -573,6 +599,16 @@ public final class DaggerSmartSchedulerApp_HiltComponents_SingletonC {
 
 
     }
+
+    @Override
+    public void injectFocusTimerService(FocusTimerService focusTimerService) {
+      injectFocusTimerService2(focusTimerService);
+    }
+
+    private FocusTimerService injectFocusTimerService2(FocusTimerService instance) {
+      FocusTimerService_MembersInjector.injectTimerManager(instance, singletonCImpl.focusTimerManagerProvider.get());
+      return instance;
+    }
   }
 
   private static final class SingletonCImpl extends SmartSchedulerApp_HiltComponents.SingletonC {
@@ -594,6 +630,10 @@ public final class DaggerSmartSchedulerApp_HiltComponents_SingletonC {
 
     private Provider<SettingsRepository> settingsRepositoryProvider;
 
+    private Provider<FocusSessionRepository> focusSessionRepositoryProvider;
+
+    private Provider<FocusTimerManager> focusTimerManagerProvider;
+
     private SingletonCImpl(ApplicationContextModule applicationContextModuleParam) {
       this.applicationContextModule = applicationContextModuleParam;
       initialize(applicationContextModuleParam);
@@ -612,6 +652,10 @@ public final class DaggerSmartSchedulerApp_HiltComponents_SingletonC {
       return AppModule_ProvideTodoDaoFactory.provideTodoDao(provideDatabaseProvider.get());
     }
 
+    private FocusSessionDao focusSessionDao() {
+      return AppModule_ProvideFocusSessionDaoFactory.provideFocusSessionDao(provideDatabaseProvider.get());
+    }
+
     @SuppressWarnings("unchecked")
     private void initialize(final ApplicationContextModule applicationContextModuleParam) {
       this.provideDatabaseProvider = DoubleCheck.provider(new SwitchingProvider<AppDatabase>(singletonCImpl, 1));
@@ -621,6 +665,8 @@ public final class DaggerSmartSchedulerApp_HiltComponents_SingletonC {
       this.provideMoshiProvider = DoubleCheck.provider(new SwitchingProvider<Moshi>(singletonCImpl, 5));
       this.llmRepositoryProvider = DoubleCheck.provider(new SwitchingProvider<LlmRepository>(singletonCImpl, 4));
       this.settingsRepositoryProvider = DoubleCheck.provider(new SwitchingProvider<SettingsRepository>(singletonCImpl, 6));
+      this.focusSessionRepositoryProvider = DoubleCheck.provider(new SwitchingProvider<FocusSessionRepository>(singletonCImpl, 8));
+      this.focusTimerManagerProvider = DoubleCheck.provider(new SwitchingProvider<FocusTimerManager>(singletonCImpl, 7));
     }
 
     @Override
@@ -676,6 +722,12 @@ public final class DaggerSmartSchedulerApp_HiltComponents_SingletonC {
 
           case 6: // com.smartscheduler.app.data.repository.SettingsRepository 
           return (T) new SettingsRepository(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule));
+
+          case 7: // com.smartscheduler.app.domain.timer.FocusTimerManager 
+          return (T) new FocusTimerManager(singletonCImpl.focusSessionRepositoryProvider.get());
+
+          case 8: // com.smartscheduler.app.data.repository.FocusSessionRepository 
+          return (T) new FocusSessionRepository(singletonCImpl.focusSessionDao());
 
           default: throw new AssertionError(id);
         }

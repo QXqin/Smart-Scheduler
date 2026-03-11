@@ -9,6 +9,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.TaskAlt
+import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -33,7 +34,8 @@ import java.util.Locale
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardScreen(
-    viewModel: DashboardViewModel = hiltViewModel()
+    viewModel: DashboardViewModel = hiltViewModel(),
+    onNavigateToStatistics: () -> Unit = {}
 ) {
     val state by viewModel.uiState.collectAsState()
     var currentTime by remember { mutableStateOf(LocalTime.now()) }
@@ -66,6 +68,18 @@ fun DashboardScreen(
                     .padding(32.dp),
                 contentAlignment = Alignment.Center
             ) {
+                // Top Right Action Button for Statistics
+                IconButton(
+                    onClick = onNavigateToStatistics,
+                    modifier = Modifier.align(Alignment.TopEnd).offset(x = 16.dp, y = (-16).dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.BarChart,
+                        contentDescription = "数据统计",
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                }
+
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
                         text = currentTime.format(timeFormatter),

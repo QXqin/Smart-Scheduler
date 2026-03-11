@@ -77,3 +77,24 @@ interface ScheduledBlockDao {
     @Query("DELETE FROM scheduled_blocks WHERE date BETWEEN :startDate AND :endDate")
     suspend fun deleteByDateRange(startDate: String, endDate: String)
 }
+
+@Dao
+interface FocusSessionDao {
+    @Query("SELECT * FROM focus_sessions ORDER BY date DESC, startTime DESC")
+    fun getAll(): Flow<List<FocusSessionEntity>>
+
+    @Query("SELECT * FROM focus_sessions WHERE date = :date ORDER BY startTime")
+    fun getByDate(date: String): Flow<List<FocusSessionEntity>>
+
+    @Query("SELECT * FROM focus_sessions WHERE date BETWEEN :startDate AND :endDate ORDER BY date, startTime")
+    fun getByDateRange(startDate: String, endDate: String): Flow<List<FocusSessionEntity>>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insert(session: FocusSessionEntity): Long
+
+    @Delete
+    suspend fun delete(session: FocusSessionEntity)
+
+    @Query("DELETE FROM focus_sessions")
+    suspend fun deleteAll()
+}

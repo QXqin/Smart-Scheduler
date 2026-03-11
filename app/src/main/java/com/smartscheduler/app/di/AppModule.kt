@@ -33,6 +33,9 @@ object AppModule {
     fun provideScheduledBlockDao(db: AppDatabase): ScheduledBlockDao = db.scheduledBlockDao()
 
     @Provides
+    fun provideFocusSessionDao(db: AppDatabase): FocusSessionDao = db.focusSessionDao()
+
+    @Provides
     @Singleton
     fun provideMoshi(): Moshi = Moshi.Builder()
         .addLast(KotlinJsonAdapterFactory())

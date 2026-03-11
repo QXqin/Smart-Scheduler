@@ -17,15 +17,19 @@ import com.smartscheduler.app.ui.calendar.CalendarScreen
 import com.smartscheduler.app.ui.todo.TodoScreen
 import com.smartscheduler.app.ui.dashboard.DashboardScreen
 import com.smartscheduler.app.ui.settings.SettingsScreen
+import com.smartscheduler.app.ui.statistics.StatisticsScreen
+import com.smartscheduler.app.ui.focus.FocusTimerScreen
 
 sealed class Screen(val route: String, val label: String, val icon: ImageVector) {
     data object Dashboard : Screen("dashboard", "看板", Icons.Default.Dashboard)
     data object Calendar : Screen("calendar", "本周", Icons.Default.CalendarMonth)
+    data object Focus : Screen("focus", "专注", Icons.Default.Timer)
     data object Todos : Screen("todos", "待办", Icons.Default.ChecklistRtl)
+    data object Statistics : Screen("statistics", "统计", Icons.Default.BarChart)
     data object Settings : Screen("settings", "设置", Icons.Default.Settings)
 }
 
-private val screens = listOf(Screen.Dashboard, Screen.Calendar, Screen.Todos, Screen.Settings)
+private val screens = listOf(Screen.Dashboard, Screen.Calendar, Screen.Focus, Screen.Todos, Screen.Statistics, Screen.Settings)
 
 @Composable
 fun AppNavigation() {
@@ -70,9 +74,17 @@ fun AppNavigation() {
             startDestination = Screen.Dashboard.route,
             modifier = Modifier.padding(innerPadding)
         ) {
-            composable(Screen.Dashboard.route) { DashboardScreen() }
+            composable(Screen.Dashboard.route) { 
+                DashboardScreen(
+                    onNavigateToStatistics = {
+                        navController.navigate(Screen.Statistics.route)
+                    }
+                ) 
+            }
             composable(Screen.Calendar.route) { CalendarScreen() }
+            composable(Screen.Focus.route) { FocusTimerScreen() }
             composable(Screen.Todos.route) { TodoScreen() }
+            composable(Screen.Statistics.route) { StatisticsScreen() }
             composable(Screen.Settings.route) { SettingsScreen() }
         }
     }

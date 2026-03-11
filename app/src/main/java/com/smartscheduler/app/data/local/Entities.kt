@@ -41,3 +41,13 @@ data class ScheduledBlockEntity(
     val note: String = "",
     val generatedAt: Long = System.currentTimeMillis()
 )
+
+@Entity(tableName = "focus_sessions")
+data class FocusSessionEntity(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val date: String,          // ISO LocalDate "2026-03-10"
+    val startTime: String,     // ISO LocalTime "10:00"
+    val endTime: String,       // ISO LocalTime "10:25"
+    val durationMinutes: Int,  // Actual focused minutes
+    val completed: Boolean = true // Whether they finished the timer or aborted early
+)

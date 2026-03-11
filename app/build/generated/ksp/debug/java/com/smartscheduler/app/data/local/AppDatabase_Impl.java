@@ -32,17 +32,20 @@ public final class AppDatabase_Impl extends AppDatabase {
 
   private volatile ScheduledBlockDao _scheduledBlockDao;
 
+  private volatile FocusSessionDao _focusSessionDao;
+
   @Override
   @NonNull
   protected SupportSQLiteOpenHelper createOpenHelper(@NonNull final DatabaseConfiguration config) {
-    final SupportSQLiteOpenHelper.Callback _openCallback = new RoomOpenHelper(config, new RoomOpenHelper.Delegate(3) {
+    final SupportSQLiteOpenHelper.Callback _openCallback = new RoomOpenHelper(config, new RoomOpenHelper.Delegate(4) {
       @Override
       public void createAllTables(@NonNull final SupportSQLiteDatabase db) {
         db.execSQL("CREATE TABLE IF NOT EXISTS `fixed_events` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `title` TEXT NOT NULL, `description` TEXT NOT NULL, `location` TEXT NOT NULL, `date` TEXT NOT NULL, `startTime` TEXT NOT NULL, `endTime` TEXT NOT NULL, `recurrenceRule` TEXT, `sourceFile` TEXT NOT NULL)");
         db.execSQL("CREATE TABLE IF NOT EXISTS `todos` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `title` TEXT NOT NULL, `description` TEXT NOT NULL, `deadlineDate` TEXT NOT NULL, `estimatedMinutes` INTEGER NOT NULL, `isCompleted` INTEGER NOT NULL, `isDaily` INTEGER NOT NULL DEFAULT 0, `createdAt` INTEGER NOT NULL)");
         db.execSQL("CREATE TABLE IF NOT EXISTS `scheduled_blocks` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `todoId` INTEGER, `title` TEXT NOT NULL, `date` TEXT NOT NULL, `startTime` TEXT NOT NULL, `endTime` TEXT NOT NULL, `note` TEXT NOT NULL, `generatedAt` INTEGER NOT NULL)");
+        db.execSQL("CREATE TABLE IF NOT EXISTS `focus_sessions` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `date` TEXT NOT NULL, `startTime` TEXT NOT NULL, `endTime` TEXT NOT NULL, `durationMinutes` INTEGER NOT NULL, `completed` INTEGER NOT NULL)");
         db.execSQL("CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)");
-        db.execSQL("INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '3b59abf952e5c218423ec494b039f82f')");
+        db.execSQL("INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '3b1bfff6def9a518bd0c14a0368bed0a')");
       }
 
       @Override
@@ -50,6 +53,7 @@ public final class AppDatabase_Impl extends AppDatabase {
         db.execSQL("DROP TABLE IF EXISTS `fixed_events`");
         db.execSQL("DROP TABLE IF EXISTS `todos`");
         db.execSQL("DROP TABLE IF EXISTS `scheduled_blocks`");
+        db.execSQL("DROP TABLE IF EXISTS `focus_sessions`");
         final List<? extends RoomDatabase.Callback> _callbacks = mCallbacks;
         if (_callbacks != null) {
           for (RoomDatabase.Callback _callback : _callbacks) {
@@ -148,9 +152,25 @@ public final class AppDatabase_Impl extends AppDatabase {
                   + " Expected:\n" + _infoScheduledBlocks + "\n"
                   + " Found:\n" + _existingScheduledBlocks);
         }
+        final HashMap<String, TableInfo.Column> _columnsFocusSessions = new HashMap<String, TableInfo.Column>(6);
+        _columnsFocusSessions.put("id", new TableInfo.Column("id", "INTEGER", true, 1, null, TableInfo.CREATED_FROM_ENTITY));
+        _columnsFocusSessions.put("date", new TableInfo.Column("date", "TEXT", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
+        _columnsFocusSessions.put("startTime", new TableInfo.Column("startTime", "TEXT", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
+        _columnsFocusSessions.put("endTime", new TableInfo.Column("endTime", "TEXT", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
+        _columnsFocusSessions.put("durationMinutes", new TableInfo.Column("durationMinutes", "INTEGER", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
+        _columnsFocusSessions.put("completed", new TableInfo.Column("completed", "INTEGER", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
+        final HashSet<TableInfo.ForeignKey> _foreignKeysFocusSessions = new HashSet<TableInfo.ForeignKey>(0);
+        final HashSet<TableInfo.Index> _indicesFocusSessions = new HashSet<TableInfo.Index>(0);
+        final TableInfo _infoFocusSessions = new TableInfo("focus_sessions", _columnsFocusSessions, _foreignKeysFocusSessions, _indicesFocusSessions);
+        final TableInfo _existingFocusSessions = TableInfo.read(db, "focus_sessions");
+        if (!_infoFocusSessions.equals(_existingFocusSessions)) {
+          return new RoomOpenHelper.ValidationResult(false, "focus_sessions(com.smartscheduler.app.data.local.FocusSessionEntity).\n"
+                  + " Expected:\n" + _infoFocusSessions + "\n"
+                  + " Found:\n" + _existingFocusSessions);
+        }
         return new RoomOpenHelper.ValidationResult(true, null);
       }
-    }, "3b59abf952e5c218423ec494b039f82f", "d6132e627bf43b13139291afe2b59c21");
+    }, "3b1bfff6def9a518bd0c14a0368bed0a", "e0a70ed6eaa5cf1af47a455fda79aab2");
     final SupportSQLiteOpenHelper.Configuration _sqliteConfig = SupportSQLiteOpenHelper.Configuration.builder(config.context).name(config.name).callback(_openCallback).build();
     final SupportSQLiteOpenHelper _helper = config.sqliteOpenHelperFactory.create(_sqliteConfig);
     return _helper;
@@ -161,7 +181,7 @@ public final class AppDatabase_Impl extends AppDatabase {
   protected InvalidationTracker createInvalidationTracker() {
     final HashMap<String, String> _shadowTablesMap = new HashMap<String, String>(0);
     final HashMap<String, Set<String>> _viewTables = new HashMap<String, Set<String>>(0);
-    return new InvalidationTracker(this, _shadowTablesMap, _viewTables, "fixed_events","todos","scheduled_blocks");
+    return new InvalidationTracker(this, _shadowTablesMap, _viewTables, "fixed_events","todos","scheduled_blocks","focus_sessions");
   }
 
   @Override
@@ -173,6 +193,7 @@ public final class AppDatabase_Impl extends AppDatabase {
       _db.execSQL("DELETE FROM `fixed_events`");
       _db.execSQL("DELETE FROM `todos`");
       _db.execSQL("DELETE FROM `scheduled_blocks`");
+      _db.execSQL("DELETE FROM `focus_sessions`");
       super.setTransactionSuccessful();
     } finally {
       super.endTransaction();
@@ -190,6 +211,7 @@ public final class AppDatabase_Impl extends AppDatabase {
     _typeConvertersMap.put(FixedEventDao.class, FixedEventDao_Impl.getRequiredConverters());
     _typeConvertersMap.put(TodoDao.class, TodoDao_Impl.getRequiredConverters());
     _typeConvertersMap.put(ScheduledBlockDao.class, ScheduledBlockDao_Impl.getRequiredConverters());
+    _typeConvertersMap.put(FocusSessionDao.class, FocusSessionDao_Impl.getRequiredConverters());
     return _typeConvertersMap;
   }
 
@@ -246,6 +268,20 @@ public final class AppDatabase_Impl extends AppDatabase {
           _scheduledBlockDao = new ScheduledBlockDao_Impl(this);
         }
         return _scheduledBlockDao;
+      }
+    }
+  }
+
+  @Override
+  public FocusSessionDao focusSessionDao() {
+    if (_focusSessionDao != null) {
+      return _focusSessionDao;
+    } else {
+      synchronized(this) {
+        if(_focusSessionDao == null) {
+          _focusSessionDao = new FocusSessionDao_Impl(this);
+        }
+        return _focusSessionDao;
       }
     }
   }

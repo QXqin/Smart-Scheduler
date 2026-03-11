@@ -1,10 +1,13 @@
 package com.smartscheduler.app;
 
 import com.smartscheduler.app.di.AppModule;
+import com.smartscheduler.app.service.FocusTimerService_GeneratedInjector;
 import com.smartscheduler.app.ui.MainActivity_GeneratedInjector;
 import com.smartscheduler.app.ui.calendar.CalendarViewModel_HiltModules;
 import com.smartscheduler.app.ui.dashboard.DashboardViewModel_HiltModules;
+import com.smartscheduler.app.ui.focus.FocusTimerViewModel_HiltModules;
 import com.smartscheduler.app.ui.settings.SettingsViewModel_HiltModules;
+import com.smartscheduler.app.ui.statistics.StatisticsViewModel_HiltModules;
 import com.smartscheduler.app.ui.todo.TodoViewModel_HiltModules;
 import dagger.Binds;
 import dagger.Component;
@@ -148,7 +151,8 @@ public final class SmartSchedulerApp_HiltComponents {
 
   @Subcomponent
   @ServiceScoped
-  public abstract static class ServiceC implements ServiceComponent,
+  public abstract static class ServiceC implements FocusTimerService_GeneratedInjector,
+      ServiceComponent,
       GeneratedComponent {
     @Subcomponent.Builder
     abstract interface Builder extends ServiceComponentBuilder {
@@ -159,11 +163,13 @@ public final class SmartSchedulerApp_HiltComponents {
       modules = {
           CalendarViewModel_HiltModules.KeyModule.class,
           DashboardViewModel_HiltModules.KeyModule.class,
+          FocusTimerViewModel_HiltModules.KeyModule.class,
           HiltWrapper_ActivityRetainedComponentManager_LifecycleModule.class,
           HiltWrapper_SavedStateHandleModule.class,
           SettingsViewModel_HiltModules.KeyModule.class,
           ActivityCBuilderModule.class,
           ViewModelCBuilderModule.class,
+          StatisticsViewModel_HiltModules.KeyModule.class,
           TodoViewModel_HiltModules.KeyModule.class
       }
   )
@@ -202,8 +208,10 @@ public final class SmartSchedulerApp_HiltComponents {
       modules = {
           CalendarViewModel_HiltModules.BindsModule.class,
           DashboardViewModel_HiltModules.BindsModule.class,
+          FocusTimerViewModel_HiltModules.BindsModule.class,
           HiltWrapper_HiltViewModelFactory_ViewModelModule.class,
           SettingsViewModel_HiltModules.BindsModule.class,
+          StatisticsViewModel_HiltModules.BindsModule.class,
           TodoViewModel_HiltModules.BindsModule.class
       }
   )
