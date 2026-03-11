@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.smartscheduler.app.ui.theme.FixedEventColor
 import com.smartscheduler.app.ui.theme.ScheduledEventColor
+import com.smartscheduler.app.domain.model.TimelineEvent
 import kotlinx.coroutines.launch
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -116,7 +117,8 @@ fun CalendarScreen(
             DayPager(
                 selectedDate = state.selectedDate,
                 state = state,
-                onDateChanged = { viewModel.selectDate(it) }
+                onDateChanged = { viewModel.selectDate(it) },
+                onEventClick = { event -> viewModel.startEditBlock(event) }
             )
         }
     }
@@ -186,6 +188,16 @@ fun CalendarScreen(
             eventCount = state.pendingImportCount,
             onConfirm = { week -> viewModel.confirmImportWithWeekOffset(week) },
             onDismiss = { viewModel.cancelImport() }
+        )
+    }
+
+    // Edit Block dialog
+    if (state.editingBlock != null) {
+        BlockEditDialog(
+            block = state.editingBlock!!,
+            onDismiss = { viewModel.dismissBlockEdit() },
+            onSave = { updatedBlock -> viewModel.saveBlock(updatedBlock) },
+            onDelete = { blockToDelete -> viewModel.deleteBlock(blockToDelete) }
         )
     }
 }
@@ -328,6 +340,90 @@ private fun WeekOffsetDialog(
 }
 
 // ---------------------------------------------------------------------------
+// Block Edit Dialog
+// ---------------------------------------------------------------------------
+
+@Composable
+private fun BlockEditDialog(
+    block: com.smartscheduler.app.domain.model.ScheduledBlock,
+    onDismiss: () -> Unit,
+    onSave: (com.smartscheduler.app.domain.model.ScheduledBlock) -> Unit,
+    onDelete: (com.smartscheduler.app.domain.model.ScheduledBlock) -> Unit
+) {
+    var title by remember { mutableStateOf(block.title) }
+    var startTimeStr by remember { mutableStateOf(block.startTime.toString()) }
+    var endTimeStr by remember { mutableStateOf(block.endTime.toString()) }
+    var note by remember { mutableStateOf(block.note) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Edit AI Schedule Block") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedTextField(
+                    value = title,
+                    onValueChange = { title = it },
+                    label = { Text("Title") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    OutlinedTextField(
+                        value = startTimeStr,
+                        onValueChange = { startTimeStr = it },
+                        label = { Text("Start Time (HH:mm)") },
+                        modifier = Modifier.weight(1f)
+                    )
+                    OutlinedTextField(
+                        value = endTimeStr,
+                        onValueChange = { endTimeStr = it },
+                        label = { Text("End Time (HH:mm)") },
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+                OutlinedTextField(
+                    value = note,
+                    onValueChange = { note = it },
+                    label = { Text("Note") },
+                    modifier = Modifier.fillMaxWidth(),
+                    minLines = 2
+                )
+            }
+        },
+        confirmButton = {
+            Button(onClick = {
+                try {
+                    val newStart = LocalTime.parse(startTimeStr)
+                    val newEnd = LocalTime.parse(endTimeStr)
+                    onSave(block.copy(
+                        title = title,
+                        startTime = newStart,
+                        endTime = newEnd,
+                        note = note
+                    ))
+                } catch (e: Exception) {
+                    // Ignore parse error or handle better UI validation
+                }
+            }) {
+                Text("Save")
+            }
+        },
+        dismissButton = {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                TextButton(
+                    onClick = { onDelete(block) },
+                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
+                ) {
+                    Text("Delete")
+                }
+                TextButton(onClick = onDismiss) {
+                    Text("Cancel")
+                }
+            }
+        }
+    )
+}
+
+// ---------------------------------------------------------------------------
 // Existing private composables (unchanged)
 // ---------------------------------------------------------------------------
 
@@ -451,7 +547,8 @@ private fun LegendItem(color: androidx.compose.ui.graphics.Color, label: String)
 private fun DayPager(
     selectedDate: LocalDate,
     state: CalendarUiState,
-    onDateChanged: (LocalDate) -> Unit
+    onDateChanged: (LocalDate) -> Unit,
+    onEventClick: (TimelineEvent) -> Unit
 ) {
     // Use a pager centered on today, allowing +/- 365 days
     val totalPages = 731 // 365 days back + today + 365 days forward
@@ -491,6 +588,7 @@ private fun DayPager(
             DayScheduleView(
                 events = state.events,
                 currentTime = if (pageDate == today) state.currentTime else null,
+                onEventClick = onEventClick,
                 modifier = Modifier.fillMaxSize()
             )
         } else {

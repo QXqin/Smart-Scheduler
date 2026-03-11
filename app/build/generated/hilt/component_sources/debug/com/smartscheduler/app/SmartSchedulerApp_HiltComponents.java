@@ -3,6 +3,7 @@ package com.smartscheduler.app;
 import com.smartscheduler.app.di.AppModule;
 import com.smartscheduler.app.ui.MainActivity_GeneratedInjector;
 import com.smartscheduler.app.ui.calendar.CalendarViewModel_HiltModules;
+import com.smartscheduler.app.ui.dashboard.DashboardViewModel_HiltModules;
 import com.smartscheduler.app.ui.settings.SettingsViewModel_HiltModules;
 import com.smartscheduler.app.ui.todo.TodoViewModel_HiltModules;
 import dagger.Binds;
@@ -157,6 +158,7 @@ public final class SmartSchedulerApp_HiltComponents {
   @Subcomponent(
       modules = {
           CalendarViewModel_HiltModules.KeyModule.class,
+          DashboardViewModel_HiltModules.KeyModule.class,
           HiltWrapper_ActivityRetainedComponentManager_LifecycleModule.class,
           HiltWrapper_SavedStateHandleModule.class,
           SettingsViewModel_HiltModules.KeyModule.class,
@@ -199,6 +201,7 @@ public final class SmartSchedulerApp_HiltComponents {
   @Subcomponent(
       modules = {
           CalendarViewModel_HiltModules.BindsModule.class,
+          DashboardViewModel_HiltModules.BindsModule.class,
           HiltWrapper_HiltViewModelFactory_ViewModelModule.class,
           SettingsViewModel_HiltModules.BindsModule.class,
           TodoViewModel_HiltModules.BindsModule.class

@@ -27,6 +27,12 @@ fun SettingsScreen(
     var apiKey by remember(settings) { mutableStateOf(settings.apiKey) }
     var modelName by remember(settings) { mutableStateOf(settings.modelName) }
     var customPrompt by remember(settings) { mutableStateOf(settings.customPrompt) }
+    
+    // Questionnaire state
+    var goal by remember { mutableStateOf("") }
+    var activeHours by remember { mutableStateOf("") }
+    var offLimits by remember { mutableStateOf("") }
+    
     var showKey by remember { mutableStateOf(false) }
     var showClearDialog by remember { mutableStateOf(false) }
     var modelDropdownExpanded by remember { mutableStateOf(false) }
@@ -179,12 +185,91 @@ fun SettingsScreen(
                     OutlinedTextField(
                         value = customPrompt,
                         onValueChange = { customPrompt = it },
-                        label = { Text("自定义指令") },
-                        placeholder = { Text("例如：我喜欢晚上学习，上午安排较难的任务...") },
+                        label = { Text("底层系统指令 (可直接编辑)") },
+                        placeholder = { Text("最终传送给 AI 的完整规则文本...") },
                         minLines = 4,
                         maxLines = 8,
                         modifier = Modifier.fillMaxWidth()
                     )
+                }
+            }
+            
+            // Questionnaire Card
+            Card(
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha=0.5f))
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Row {
+                        Icon(Icons.Default.AutoFixHigh, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            "小白快捷向导 (白话问卷)",
+                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+
+                    Text(
+                        "不知道提示词怎么写？回答以下三个问题，点击生成即可自动覆盖到上方的“底层系统指令”中！",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+
+                    OutlinedTextField(
+                        value = goal,
+                        onValueChange = { goal = it },
+                        label = { Text("1. 您的复习/工作目标是什么？") },
+                        placeholder = { Text("例: 考研理工科/期末冲刺/雅思8分") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    OutlinedTextField(
+                        value = activeHours,
+                        onValueChange = { activeHours = it },
+                        label = { Text("2. 您的核心活跃时段？") },
+                        placeholder = { Text("例: 通常早上8点起，晚11点睡") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    OutlinedTextField(
+                        value = offLimits,
+                        onValueChange = { offLimits = it },
+                        label = { Text("3. 您有绝不碰书的雷区吗？") },
+                        placeholder = { Text("例: 中午必须午睡1小时") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Button(
+                        onClick = {
+                            val builder = StringBuilder()
+                            if (goal.isNotBlank()) builder.append("【用户目标】: $goal\n")
+                            if (activeHours.isNotBlank()) builder.append("【活跃时段】: $activeHours\n")
+                            if (offLimits.isNotBlank()) builder.append("【休息雷区(必须严格遵守)】: $offLimits\n")
+                            
+                            val generated = builder.toString().trim()
+                            if (generated.isNotEmpty()) {
+                                customPrompt = "请严格根据以下用户画像分配日程：\n$generated"
+                                scope.launch {
+                                    snackbarHostState.showSnackbar("底层系统指令已生成！请点击下方保存。")
+                                }
+                            } else {
+                                scope.launch {
+                                    snackbarHostState.showSnackbar("请至少填写一项内容")
+                                }
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                    ) {
+                        Text("一键组装高阶提示词")
+                    }
                 }
             }
 

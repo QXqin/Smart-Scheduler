@@ -42,8 +42,11 @@ class GenerateScheduleUseCase @Inject constructor(
             // Call LLM
             val blocks = llmRepository.generateSchedule(settings, fixedEvents, todos, monday)
 
-            // Clear old generated schedule for this week and save new
-            eventRepository.clearScheduledBlocksByRange(monday, sunday)
+            // To avoid duplication, clear all previously AI-generated blocks from TODAY onwards indefinitely
+            // Since AI re-evaluates all remaining tasks, we don't want old AI future blocks to conflict.
+            val today = LocalDate.now()
+            eventRepository.clearScheduledBlocksByRange(today, today.plusYears(1))
+            
             eventRepository.insertScheduledBlocks(blocks)
 
             // Duration Backfilling: Update Todo estimatedMinutes if it was 0

@@ -25,6 +25,10 @@ import com.smartscheduler.app.ui.calendar.CalendarViewModel;
 import com.smartscheduler.app.ui.calendar.CalendarViewModel_HiltModules;
 import com.smartscheduler.app.ui.calendar.CalendarViewModel_HiltModules_BindsModule_Binds_LazyMapKey;
 import com.smartscheduler.app.ui.calendar.CalendarViewModel_HiltModules_KeyModule_Provide_LazyMapKey;
+import com.smartscheduler.app.ui.dashboard.DashboardViewModel;
+import com.smartscheduler.app.ui.dashboard.DashboardViewModel_HiltModules;
+import com.smartscheduler.app.ui.dashboard.DashboardViewModel_HiltModules_BindsModule_Binds_LazyMapKey;
+import com.smartscheduler.app.ui.dashboard.DashboardViewModel_HiltModules_KeyModule_Provide_LazyMapKey;
 import com.smartscheduler.app.ui.settings.SettingsViewModel;
 import com.smartscheduler.app.ui.settings.SettingsViewModel_HiltModules;
 import com.smartscheduler.app.ui.settings.SettingsViewModel_HiltModules_BindsModule_Binds_LazyMapKey;
@@ -396,7 +400,7 @@ public final class DaggerSmartSchedulerApp_HiltComponents_SingletonC {
 
     @Override
     public Map<Class<?>, Boolean> getViewModelKeys() {
-      return LazyClassKeyMap.<Boolean>of(MapBuilder.<String, Boolean>newMapBuilder(3).put(CalendarViewModel_HiltModules_KeyModule_Provide_LazyMapKey.lazyClassKeyName, CalendarViewModel_HiltModules.KeyModule.provide()).put(SettingsViewModel_HiltModules_KeyModule_Provide_LazyMapKey.lazyClassKeyName, SettingsViewModel_HiltModules.KeyModule.provide()).put(TodoViewModel_HiltModules_KeyModule_Provide_LazyMapKey.lazyClassKeyName, TodoViewModel_HiltModules.KeyModule.provide()).build());
+      return LazyClassKeyMap.<Boolean>of(MapBuilder.<String, Boolean>newMapBuilder(4).put(CalendarViewModel_HiltModules_KeyModule_Provide_LazyMapKey.lazyClassKeyName, CalendarViewModel_HiltModules.KeyModule.provide()).put(DashboardViewModel_HiltModules_KeyModule_Provide_LazyMapKey.lazyClassKeyName, DashboardViewModel_HiltModules.KeyModule.provide()).put(SettingsViewModel_HiltModules_KeyModule_Provide_LazyMapKey.lazyClassKeyName, SettingsViewModel_HiltModules.KeyModule.provide()).put(TodoViewModel_HiltModules_KeyModule_Provide_LazyMapKey.lazyClassKeyName, TodoViewModel_HiltModules.KeyModule.provide()).build());
     }
 
     @Override
@@ -424,6 +428,8 @@ public final class DaggerSmartSchedulerApp_HiltComponents_SingletonC {
 
     private Provider<CalendarViewModel> calendarViewModelProvider;
 
+    private Provider<DashboardViewModel> dashboardViewModelProvider;
+
     private Provider<SettingsViewModel> settingsViewModelProvider;
 
     private Provider<TodoViewModel> todoViewModelProvider;
@@ -446,13 +452,14 @@ public final class DaggerSmartSchedulerApp_HiltComponents_SingletonC {
     private void initialize(final SavedStateHandle savedStateHandleParam,
         final ViewModelLifecycle viewModelLifecycleParam) {
       this.calendarViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 0);
-      this.settingsViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 1);
-      this.todoViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 2);
+      this.dashboardViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 1);
+      this.settingsViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 2);
+      this.todoViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 3);
     }
 
     @Override
     public Map<Class<?>, javax.inject.Provider<ViewModel>> getHiltViewModelMap() {
-      return LazyClassKeyMap.<javax.inject.Provider<ViewModel>>of(MapBuilder.<String, javax.inject.Provider<ViewModel>>newMapBuilder(3).put(CalendarViewModel_HiltModules_BindsModule_Binds_LazyMapKey.lazyClassKeyName, ((Provider) calendarViewModelProvider)).put(SettingsViewModel_HiltModules_BindsModule_Binds_LazyMapKey.lazyClassKeyName, ((Provider) settingsViewModelProvider)).put(TodoViewModel_HiltModules_BindsModule_Binds_LazyMapKey.lazyClassKeyName, ((Provider) todoViewModelProvider)).build());
+      return LazyClassKeyMap.<javax.inject.Provider<ViewModel>>of(MapBuilder.<String, javax.inject.Provider<ViewModel>>newMapBuilder(4).put(CalendarViewModel_HiltModules_BindsModule_Binds_LazyMapKey.lazyClassKeyName, ((Provider) calendarViewModelProvider)).put(DashboardViewModel_HiltModules_BindsModule_Binds_LazyMapKey.lazyClassKeyName, ((Provider) dashboardViewModelProvider)).put(SettingsViewModel_HiltModules_BindsModule_Binds_LazyMapKey.lazyClassKeyName, ((Provider) settingsViewModelProvider)).put(TodoViewModel_HiltModules_BindsModule_Binds_LazyMapKey.lazyClassKeyName, ((Provider) todoViewModelProvider)).build());
     }
 
     @Override
@@ -484,10 +491,13 @@ public final class DaggerSmartSchedulerApp_HiltComponents_SingletonC {
           case 0: // com.smartscheduler.app.ui.calendar.CalendarViewModel 
           return (T) new CalendarViewModel(ApplicationContextModule_ProvideApplicationFactory.provideApplication(singletonCImpl.applicationContextModule), singletonCImpl.eventRepositoryProvider.get(), singletonCImpl.icsParserProvider.get(), viewModelCImpl.generateScheduleUseCase());
 
-          case 1: // com.smartscheduler.app.ui.settings.SettingsViewModel 
+          case 1: // com.smartscheduler.app.ui.dashboard.DashboardViewModel 
+          return (T) new DashboardViewModel(singletonCImpl.eventRepositoryProvider.get(), singletonCImpl.todoRepositoryProvider.get());
+
+          case 2: // com.smartscheduler.app.ui.settings.SettingsViewModel 
           return (T) new SettingsViewModel(singletonCImpl.settingsRepositoryProvider.get(), singletonCImpl.eventRepositoryProvider.get(), singletonCImpl.todoRepositoryProvider.get());
 
-          case 2: // com.smartscheduler.app.ui.todo.TodoViewModel 
+          case 3: // com.smartscheduler.app.ui.todo.TodoViewModel 
           return (T) new TodoViewModel(singletonCImpl.todoRepositoryProvider.get());
 
           default: throw new AssertionError(id);

@@ -15,15 +15,17 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.smartscheduler.app.ui.calendar.CalendarScreen
 import com.smartscheduler.app.ui.todo.TodoScreen
+import com.smartscheduler.app.ui.dashboard.DashboardScreen
 import com.smartscheduler.app.ui.settings.SettingsScreen
 
 sealed class Screen(val route: String, val label: String, val icon: ImageVector) {
-    data object Calendar : Screen("calendar", "今日", Icons.Default.CalendarMonth)
+    data object Dashboard : Screen("dashboard", "看板", Icons.Default.Dashboard)
+    data object Calendar : Screen("calendar", "本周", Icons.Default.CalendarMonth)
     data object Todos : Screen("todos", "待办", Icons.Default.ChecklistRtl)
     data object Settings : Screen("settings", "设置", Icons.Default.Settings)
 }
 
-private val screens = listOf(Screen.Calendar, Screen.Todos, Screen.Settings)
+private val screens = listOf(Screen.Dashboard, Screen.Calendar, Screen.Todos, Screen.Settings)
 
 @Composable
 fun AppNavigation() {
@@ -65,9 +67,10 @@ fun AppNavigation() {
     ) { innerPadding ->
         NavHost(
             navController = navController,
-            startDestination = Screen.Calendar.route,
+            startDestination = Screen.Dashboard.route,
             modifier = Modifier.padding(innerPadding)
         ) {
+            composable(Screen.Dashboard.route) { DashboardScreen() }
             composable(Screen.Calendar.route) { CalendarScreen() }
             composable(Screen.Todos.route) { TodoScreen() }
             composable(Screen.Settings.route) { SettingsScreen() }

@@ -53,32 +53,31 @@ class CalendarViewModel @Inject constructor(
 
     @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
     val uiState: StateFlow<CalendarUiState> = combine(
-        _selectedDate,
-        _selectedDate.flatMapLatest { date ->
-            combine(
-                eventRepository.getFixedEventsByDate(date),
-                eventRepository.getScheduledBlocksByDate(date)
-            ) { fixedEvents, scheduledBlocks ->
-                val fixed = fixedEvents.map { it.toTimelineEvent() }
-                val scheduled = scheduledBlocks.map { it.toTimelineEvent() }
-                (fixed + scheduled).sortedBy { it.startTime }
-            }
+        combine(
+            _selectedDate,
+            _selectedDate.flatMapLatest { date ->
+                combine(
+                    eventRepository.getFixedEventsByDate(date),
+                    eventRepository.getScheduledBlocksByDate(date)
+                ) { fixedEvents, scheduledBlocks ->
+                    val fixed = fixedEvents.map { it.toTimelineEvent() }
+                    val scheduled = scheduledBlocks.map { it.toTimelineEvent() }
+                    (fixed + scheduled).sortedBy { it.startTime }
+                }
+            },
+            _isGenerating
+        ) { date, events, generating ->
+            Triple(date, events, generating)
         },
-        _isGenerating,
-        _message,
-        combine(_showWeekOffsetDialog, _pendingEvents) { show, pending -> show to pending.size },
-        _editingBlock
-    ) { args ->
-        // args: [date, events, generating, msg, (showDialog, pendingCount), editingBlock]
-        val date = args[0] as LocalDate
-        @Suppress("UNCHECKED_CAST")
-        val events = args[1] as List<TimelineEvent>
-        val generating = args[2] as Boolean
-        val msg = args[3] as String?
-        @Suppress("UNCHECKED_CAST")
-        val pair = args[4] as Pair<Boolean, Int>
+        combine(
+            _message,
+            combine(_showWeekOffsetDialog, _pendingEvents) { show, pending -> Pair(show, pending.size) },
+            _editingBlock
+        ) { msg, pair, editing ->
+            Triple(msg, pair, editing)
+        }
+    ) { (date, events, generating), (msg, pair, editing) ->
         val (showDialog, pendingCount) = pair
-        val editing = args[5] as ScheduledBlock?
         CalendarUiState(
             selectedDate = date,
             events = events,

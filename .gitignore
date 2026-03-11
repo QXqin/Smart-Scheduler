@@ -18,3 +18,6 @@ crash_only.txt
 crash_utf8.txt
 build_error.txt
 build_output.txt
+build_output2.txt
+build_error_utf8.txt
+/app/build/
